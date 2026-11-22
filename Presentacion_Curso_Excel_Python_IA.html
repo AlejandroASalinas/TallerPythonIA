@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taller FENGUSS: De Excel a Python con IA y VS Code</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0b2341; --navy2:#163a66; --gold:#c5a059; --gold-d:#b08d46; --blue:#005a9c;
+    --bg:#f8fafc; --line:#e2e8f0; --ink:#1e293b; --mute:#64748b; --green:#047857; --red:#dc2626;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#e9eef4;overflow:hidden}
+  body{font-family:'Plus Jakarta Sans',system-ui,'Segoe UI',sans-serif;color:var(--ink)}
+  code,pre,.mono{font-family:'JetBrains Mono',Consolas,monospace}
+  #stage{position:absolute;left:50%;top:50%;width:1280px;height:720px;background:var(--bg);
+    transform-origin:center center;overflow:hidden;box-shadow:0 10px 40px rgba(11,35,65,.18)}
+
+  /* Header */
+  header{position:absolute;top:0;left:0;right:0;height:68px;background:#fff;border-bottom:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;padding:0 32px;z-index:5}
+  .brand{display:flex;align-items:center;gap:16px}
+  .logo{height:44px;width:auto;display:block}
+  .logo-fb{font-weight:800;color:var(--navy);font-size:17px;letter-spacing:-.01em;display:none}
+  .sep{width:1px;height:34px;background:var(--line)}
+  .brand small{display:block;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
+  .brand b{font-size:14px;color:var(--navy);font-weight:700}
+  .hud{display:flex;align-items:center;gap:14px}
+  #block{font-size:12px;font-weight:700;color:var(--navy);background:#fffbeb;border:1px solid #fde68a;
+    padding:5px 12px;border-radius:999px;white-space:nowrap}
+  #clock{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:13px;background:var(--navy);color:#fff;border:0;
+    padding:6px 12px;border-radius:10px;cursor:pointer}
+  #clock span{color:var(--gold)}
+  .count{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--mute);font-weight:600}
+  .count b{color:var(--navy);font-size:14px}
+  .bar{width:120px;height:9px;background:#f1f5f9;border:1px solid var(--line);border-radius:99px;overflow:hidden}
+  #prog{height:100%;width:0;background:linear-gradient(90deg,var(--navy),var(--gold));border-radius:99px;transition:width .3s}
+
+  /* Footer */
+  footer{position:absolute;bottom:0;left:0;right:0;height:52px;background:#fff;border-top:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;padding:0 32px;z-index:5;font-size:12px;color:var(--mute)}
+  kbd{font-family:'JetBrains Mono',monospace;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:5px;padding:1px 7px;
+    font-weight:700;color:#334155;font-size:11px}
+  .nav{display:flex;gap:10px}
+  .btn{font:inherit;font-weight:700;font-size:12px;padding:8px 16px;border-radius:11px;cursor:pointer;border:1px solid #cbd5e1;
+    background:#fff;color:var(--navy)}
+  .btn.pri{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+  /* Slides */
+  .slide{position:absolute;top:68px;bottom:52px;left:0;right:0;padding:34px 72px 28px;display:none;flex-direction:column}
+  .slide.on{display:flex;animation:in .35s cubic-bezier(.16,1,.3,1)}
+  @keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .center{align-items:center;justify-content:center;text-align:center}
+  .kick{font-size:13px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--gold)}
+  h1{font-size:54px;line-height:1.08;font-weight:800;color:var(--navy);letter-spacing:-.025em}
+  h2{font-size:36px;line-height:1.15;font-weight:800;color:var(--navy);letter-spacing:-.02em;margin-top:6px}
+  .grad{background:linear-gradient(90deg,var(--navy),#0284c7,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{font-size:19px;color:#475569;margin-top:10px;line-height:1.45;max-width:980px}
+  .body{flex:1;display:flex;flex-direction:column;justify-content:center;gap:18px;margin-top:14px;min-height:0}
+  .grid{display:grid;gap:18px}
+  .g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+  .card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px 24px;box-shadow:0 1px 2px rgba(15,23,42,.05);text-align:left}
+  .card.navy{border:2px solid var(--navy)}
+  .card.red{border-color:#fecaca}
+  .card.green{border-color:#6ee7b7;background:#ecfdf5}
+  .card h3{font-size:21px;font-weight:800;color:var(--navy);margin-bottom:8px;line-height:1.2}
+  .card p,.card li{font-size:17px;line-height:1.45;color:#475569}
+  .num{width:42px;height:42px;border-radius:12px;background:#fffbeb;border:1px solid #fde68a;color:var(--gold-d);
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-family:'JetBrains Mono',monospace;margin-bottom:12px;font-size:16px}
+  ul.ticks{list-style:none;display:flex;flex-direction:column;gap:12px}
+  ul.ticks li{display:flex;gap:12px;font-size:19px;line-height:1.4;color:#334155}
+  ul.ticks li::before{content:"✓";color:var(--gold);font-weight:800}
+  ul.x li::before{content:"✕";color:var(--red)}
+  .tag{display:inline-block;font-size:12px;font-weight:800;padding:4px 12px;border-radius:99px;border:1px solid}
+  .tag.r{background:#fef2f2;color:#b91c1c;border-color:#fecaca}
+  .tag.n{background:#eff6ff;color:var(--navy);border-color:#bfdbfe}
+  .tag.g{background:#fffbeb;color:var(--gold-d);border-color:#fde68a}
+  .pc{align-self:flex-start;display:inline-flex;align-items:center;gap:10px;background:var(--navy);color:#fff;font-weight:800;
+    font-size:15px;padding:9px 18px;border-radius:12px;margin-top:4px}
+  .pc i{font-style:normal;color:var(--gold)}
+  .note{background:#eff6ff;border:1px solid #bfdbfe;border-radius:14px;padding:14px 18px;font-size:17px;color:var(--navy);line-height:1.45;text-align:left}
+  .note.gold{background:#fffbeb;border-color:#fde68a}
+  .term{background:#0f172a;color:#e2e8f0;border-radius:14px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:16px;
+    line-height:1.65;position:relative;text-align:left;border:1px solid #334155;white-space:pre-wrap;word-break:break-word}
+  .term .c{color:#94a3b8}.term .k{color:#7dd3fc}.term .o{color:#6ee7b7}.term .y{color:#fcd34d}
+  .term.sm{font-size:13px;line-height:1.55;padding-right:88px}
+  .copy{position:absolute;top:10px;right:10px;font:700 11px 'Plus Jakarta Sans',sans-serif;background:var(--gold);color:var(--navy);
+    border:0;border-radius:8px;padding:5px 10px;cursor:pointer}
+  code.in{background:#f1f5f9;border:1px solid var(--line);border-radius:6px;padding:1px 7px;font-size:.9em;color:var(--blue);font-weight:600}
+
+  /* Agenda */
+  .mod{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px 24px;text-align:left}
+  .mod h3{font-size:20px;color:var(--navy);font-weight:800;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .row{display:flex;gap:14px;align-items:baseline;padding:7px 0;border-top:1px dashed var(--line);font-size:17px;color:#334155}
+  .row span{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--gold-d);min-width:64px}
+  .brk{text-align:center;font-weight:800;color:var(--gold-d);font-size:15px;align-self:center;writing-mode:vertical-rl;transform:rotate(180deg);letter-spacing:.1em}
+
+  /* Section */
+  .sec{background:linear-gradient(160deg,var(--navy),var(--navy2));color:#fff}
+  .sec h1{color:#fff}.sec .lead{color:#cbd5e1;margin-left:auto;margin-right:auto}
+  .big{font-size:120px;font-weight:800;color:var(--gold);line-height:1;font-family:'JetBrains Mono',monospace}
+
+  /* Flow */
+  .flow{display:grid;grid-template-columns:1fr 34px 1fr 34px 1fr 34px 1fr;align-items:stretch}
+  .arrow{display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:26px;font-weight:800}
+  .tree{font-family:'JetBrains Mono',monospace;font-size:17px;line-height:1.75;color:var(--navy);background:#fff;border:1px solid var(--line);
+    border-radius:16px;padding:20px 26px;text-align:left}
+  .tree em{font-style:normal;color:var(--mute);font-size:14px}
+  table.t{border-collapse:collapse;width:100%;font-family:'JetBrains Mono',monospace;font-size:15px;background:#fff;border:1px solid var(--line)}
+  table.t th{background:#f1f5f9;color:var(--navy);text-align:left;padding:7px 12px;border-bottom:1px solid var(--line)}
+  table.t td{padding:7px 12px;border-bottom:1px solid #f1f5f9;color:#334155}
+
+  /* Model */
+  .model{position:relative;display:grid;grid-template-columns:1fr 1fr 1.25fr 1fr;gap:44px;align-items:center}
+  .ent{background:#fff;border:2px solid #bfdbfe;border-radius:16px;padding:14px 16px;text-align:left;position:relative}
+  .ent small{font-size:11px;font-weight:800;text-transform:uppercase;color:var(--blue);letter-spacing:.05em}
+  .ent h4{font-size:18px;color:var(--navy);font-weight:800;margin:2px 0}
+  .ent div{font-size:13px;color:var(--mute);font-weight:600;margin-bottom:8px}
+  .ent p{font-family:'JetBrains Mono',monospace;font-size:13.5px;line-height:1.6;background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:#334155}
+  .ent.fact{background:linear-gradient(180deg,var(--navy),var(--navy2));border-color:var(--gold);color:#fff}
+  .ent.fact small{color:var(--gold)}.ent.fact h4{color:#fff}.ent.fact div{color:#fde68a}
+  .ent.fact p{background:rgba(0,0,0,.3);border-color:rgba(255,255,255,.12);color:#e2e8f0}
+  .ent:not(:last-child)::after{content:"1 → ∞";position:absolute;right:-44px;top:50%;width:44px;text-align:center;transform:translateY(-50%);
+    font:700 12px 'JetBrains Mono',monospace;color:var(--gold-d)}
+  .ent.rev::after{content:"∞ ← 1"}
+
+  /* Estrella */
+  .star{position:relative;width:1136px;height:384px;flex:none}
+  .star svg{position:absolute;inset:0;width:100%;height:100%}
+  .wire{stroke:var(--blue);stroke-width:3;stroke-dasharray:8 7;stroke-linecap:round;animation:dash 1.1s linear infinite}
+  .wire.gold{stroke:var(--gold)}.wire.new{stroke:#94a3b8}
+  @keyframes dash{to{stroke-dashoffset:-30}}
+  .star .ent{position:absolute;width:270px;padding:12px 14px}
+  .star .ent::after{display:none}
+  .star .ent h4{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 6px;min-height:24px}
+  .star .ent h4 span:not(.add){font-size:12.5px;font-weight:600;color:var(--mute)}
+  .star .ent.fact h4 span{color:#fde68a}
+  .star .ent p{font-size:13px;line-height:1.42;padding:6px 10px;white-space:nowrap;overflow:hidden}
+  .star .ent.empty{border-style:dashed;border-color:#94a3b8;background:#f8fafc}
+  .star .ent.empty small{color:var(--mute)}
+  .add{display:inline-block;min-width:100%;border-bottom:1.5px dashed #cbd5e1;outline:0;cursor:text;color:var(--green);font-weight:600}
+  .add:empty::before{content:attr(data-ph);color:#94a3b8;font-weight:400}
+  .add:focus{border-bottom-color:var(--gold);background:rgba(197,160,89,.12)}
+  .fact .add{color:#6ee7b7;border-bottom-color:rgba(255,255,255,.3)}
+  .add.ttl{color:var(--navy);font-size:18px;font-weight:800}
+  .rel{position:absolute;transform:translate(-50%,-50%);background:#fff;border:1px solid var(--line);border-radius:9px;padding:3px 8px;
+    font:600 11px 'JetBrains Mono',monospace;color:var(--navy);text-align:center;white-space:nowrap;box-shadow:0 1px 3px rgba(15,23,42,.08)}
+  .rel b{display:block;color:var(--gold-d);font-size:12px}
+  .rel.side{transform:translate(0,-50%);display:flex;gap:8px;align-items:center}
+
+  .shot{background:#fff;border:1px solid var(--line);border-radius:16px;padding:10px;display:flex;align-items:center;justify-content:center;min-height:0;overflow:hidden}
+  .shot img{max-width:100%;max-height:300px;object-fit:contain;border-radius:10px;display:block}
+  .shot-fb{color:var(--mute);font-weight:700;text-align:center;font-size:16px}
+  .prompt{font-size:12.4px;line-height:1.5;max-height:330px;overflow:auto;padding-right:90px}
+  .prompt b{color:#fcd34d;font-weight:600}
+
+  .dl{display:flex;align-items:center;gap:16px;background:#fff;border:2px solid var(--gold);border-radius:16px;padding:14px 20px;text-align:left}
+  .dl-ico{width:44px;height:44px;border-radius:12px;background:var(--navy);color:var(--gold);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;flex:none}
+  .dl-t{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--gold-d)}
+  .dl a{font-family:'JetBrains Mono',monospace;font-size:16px;line-height:1.35;display:block;font-weight:600;color:var(--blue);text-decoration:none}
+  .dl a:hover{text-decoration:underline}
+  .dl-s{margin-left:auto;font-size:15px;color:#475569;text-align:right;max-width:430px;line-height:1.4}
+
+  .tl{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px 24px;display:flex;flex-direction:column;justify-content:space-between;position:relative}
+  .tl-i{display:flex;gap:18px;align-items:flex-start;position:relative;padding:6px 0}
+  .tl-i>span{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;color:var(--gold-d);background:#fffbeb;border:1px solid #fde68a;border-radius:9px;padding:4px 10px;min-width:64px;text-align:center}
+  .tl-i b{font-size:18px;color:var(--navy)}
+  .tl-i p{font-size:15px;color:#475569;line-height:1.4;margin-top:2px}
+  .tl-i.now>span{background:var(--navy);color:var(--gold);border-color:var(--navy)}
+
+  /* Notes */
+  #notes{position:absolute;left:0;right:0;bottom:52px;background:rgba(11,35,65,.97);color:#fff;padding:14px 32px;z-index:6;
+    font-size:15px;line-height:1.5;display:none;border-top:3px solid var(--gold)}
+  #notes.on{display:block}
+  #notes b{color:var(--gold)}
+  .stat{font-size:34px;font-weight:800;color:var(--navy);line-height:1.1}
+  .stat+p{font-size:15px !important;color:var(--mute) !important;margin-top:4px}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <header>
+    <div class="brand">
+      <img class="logo" src="logouss.jpg"
+           alt="Universidad San Sebastián" onerror="if(!this.dataset.r){this.dataset.r=1;this.src='https://raw.githubusercontent.com/AlejandroASalinas/TallerPythonIA/main/logouss.jpg';return;}this.style.display='none';this.nextElementSibling.style.display='block'">
+      <span class="logo-fb">Universidad San Sebastián</span>
+      <div class="sep"></div>
+      <div><small>Facultad de Economía, Negocios y Gobierno · FENGUSS</small><b>Taller práctico: de Excel a Python con IA y VS Code</b></div>
+    </div>
+    <div class="hud">
+      <span id="block"></span>
+      <button id="clock" title="Clic: iniciar / pausar · R: reiniciar"><span>▶</span> 00:00</button>
+      <span class="count"><b id="cur">1</b> / <span id="tot"></span></span>
+      <div class="bar"><div id="prog"></div></div>
+    </div>
+  </header>
+
+  <!-- 1 PORTADA -->
+  <section class="slide center" data-block="Bienvenida · min 0–2"
+    data-note="<b>Di:</b> quién eres y a qué te dedicas (30 seg). <b>Pide:</b> que abran su notebook y tengan internet. <b>Inicia el reloj</b> (clic arriba a la derecha) cuando partas.">
+    <img src="logouss.jpg" alt="Universidad San Sebastián"
+         style="height:104px;margin-bottom:18px" onerror="if(!this.dataset.r){this.dataset.r=1;this.src='https://raw.githubusercontent.com/AlejandroASalinas/TallerPythonIA/main/logouss.jpg';return;}this.outerHTML='<div style=&quot;font-size:30px;font-weight:800;color:#0b2341;margin-bottom:18px&quot;>Universidad San Sebastián</div>'">
+    <span class="tag g" style="margin-bottom:20px">FACULTAD DE ECONOMÍA, NEGOCIOS Y GOBIERNO · FENGUSS</span>
+    <h1>De Excel a Python<br><span class="grad">con IA y VS Code</span></h1>
+    <p class="lead" style="margin-top:18px">Migra tus procesos habituales de Excel a un script que se repite solo<br>y termina en un dashboard interactivo.</p>
+    <div class="card" style="margin-top:26px;padding:14px 26px;display:flex;gap:16px;align-items:center">
+      <div class="num" style="margin:0;background:var(--navy);border:0;color:var(--gold)">AA</div>
+      <div><div style="font-size:11px;font-weight:800;letter-spacing:.08em;color:#94a3b8;text-transform:uppercase">Relator</div>
+      <div style="font-size:18px;font-weight:800;color:var(--navy)">Alejandro Aguilar Salinas</div><div style="font-size:13px;color:var(--mute)">Magíster en Data Science · USS</div></div>
+    </div>
+  </section>
+
+  <!-- 2 PROBLEMA -->
+  <section class="slide" data-block="Módulo 1 · min 2–5"
+    data-note="<b>Pregunta al curso:</b> «¿A quién le ha pasado alguna de estas?» y deja que levanten la mano. No expliques cada punto: solo léelos. <b>Máx. 3 min.</b>">
+    <span class="kick">El punto de partida</span>
+    <h2>¿Te suena conocido?</h2>
+    <div class="body">
+      <div class="grid g2">
+        <div class="card red"><span class="tag r">Hoy, en Excel</span>
+          <ul class="ticks x" style="margin-top:16px">
+            <li>Muchas planillas abiertas al mismo tiempo</li>
+            <li>Archivos pesados y llenos de fórmulas</li>
+            <li>Fórmulas mal arrastradas o pegadas como valores</li>
+            <li>Usar por accidente el archivo equivocado</li>
+            <li>Rehacer todo a mano el próximo mes</li>
+          </ul></div>
+        <div class="card navy"><span class="tag n">Lo que buscamos</span>
+          <ul class="ticks" style="margin-top:16px">
+            <li>Un proceso escrito una vez, que se repite igual</li>
+            <li>Inputs explícitos: sé qué archivo estoy leyendo</li>
+            <li>Totales que se pueden comprobar</li>
+            <li>Un reporte más amable que una tabla dinámica</li>
+            <li>La IA escribe el código, tú diriges</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 OBJETIVO -->
+  <section class="slide" data-block="Módulo 1 · min 5–8"
+    data-note="<b>Mensaje clave:</b> hoy NO se aprende a programar. Se aprende a migrar un proceso con ayuda de la IA. <b>Sé honesto:</b> Python no elimina errores; por eso validaremos rutas y totales.">
+    <span class="kick">El objetivo de hoy</span>
+    <h2>Salir de aquí sabiendo migrar un proceso con la IA</h2>
+    <div class="body">
+      <div class="flow">
+        <div class="card"><div class="num">01</div><h3>Explicas</h3><p>Le cuentas tu proceso a la IA, en español.</p></div><div class="arrow">→</div>
+        <div class="card"><div class="num">02</div><h3>Ejecutas</h3><p>Corres el código en tu propio computador.</p></div><div class="arrow">→</div>
+        <div class="card"><div class="num">03</div><h3>Devuelves</h3><p>Le pegas a la IA el resultado o el error.</p></div><div class="arrow">→</div>
+        <div class="card green"><div class="num">04</div><h3>Obtienes</h3><p>Un script que genera tu dashboard HTML.</p></div>
+      </div>
+      <div class="grid g2">
+        <div class="note gold"><b>No es</b> un curso de programación, estadística ni análisis de datos.</div>
+        <div class="note"><b>Python no elimina los errores:</b> por eso aprenderemos a validar inputs y totales.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 RUTA -->
+  <section class="slide" data-block="Módulo 1 · min 8–10"
+    data-note="<b>Solo muestra el mapa</b>, no lo expliques. Avisa que el break es a los 80 min. <b>Regla para ti:</b> si una pregunta te saca del camino, di «la anoto y la vemos al final».">
+    <span class="kick">Hoja de ruta</span>
+    <h2>Dos módulos de 80 minutos</h2>
+    <div class="body">
+      <div class="grid" style="grid-template-columns:1fr 40px 1fr">
+        <div class="mod"><h3>Módulo 1 · Preparar el taller <span class="tag g">80 min</span></h3>
+          <div class="row"><span>0–10</span>Bienvenida y objetivo</div>
+          <div class="row"><span>10–25</span>VS Code y carpetas de trabajo</div>
+          <div class="row"><span>25–38</span>Descargar e instalar Python 3.12</div>
+          <div class="row"><span>38–50</span>Extensiones y librerías</div>
+          <div class="row"><span>50–64</span>Recorrido, notebook y kernel</div>
+          <div class="row"><span>64–73</span>CSV, TSV y el ciclo con la IA</div>
+          <div class="row"><span>73–80</span>El prompt de trabajo con la IA</div>
+        </div>
+        <div class="brk">BREAK · 20 MIN</div>
+        <div class="mod"><h3>Módulo 2 · Migrar con la IA <span class="tag n">80 min</span></h3>
+          <div class="row"><span>0–10</span>Los 4 archivos y el primer script</div>
+          <div class="row"><span>10–35</span>Explorar hasta entender el modelo</div>
+          <div class="row"><span>35–45</span>Hacerle preguntas a los datos</div>
+          <div class="row"><span>45–65</span>Construir el dashboard HTML</div>
+          <div class="row"><span>65–70</span>Comprobar antes de confiar</div>
+          <div class="row"><span>70–80</span>El modelo de datos y cierre</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 SECCIÓN M1 -->
+  <section class="slide center sec" data-block="Módulo 1 · min 10"
+    data-note="<b>Transición:</b> «Cierren todo lo demás. Desde ahora trabajamos en el computador». Pasa de inmediato a la siguiente.">
+    <div class="big">1</div>
+    <h1 style="margin-top:10px">Preparar el taller</h1>
+    <p class="lead">Instalamos una sola vez. Después, solo se usa.</p>
+  </section>
+
+  <!-- 6 VSCODE + CARPETAS -->
+  <section class="slide" data-block="Módulo 1 · min 10–25"
+    data-note="<b>Al PC:</b> instala VS Code (User Installer x64, marcar Add to PATH). Abre terminal, muestra cd.. hasta C:\ y crea las carpetas. Peguen el link directo en el navegador (descarga VerduleriaDonJuanito.zip al instante), descompriman y copien los 4 Excel a Ingesta (no la carpeta del zip completa). Si un alumno no tiene internet, pásale los Excel por pendrive. <b>Ojo:</b> que muestren extensiones de archivo. <b>Si alguien no puede crear en C:\</b> (PC corporativo), que trabaje con un compañero; no lo resuelvas en clase.">
+    <span class="kick">Paso 1 de 3</span>
+    <h2>VS Code y nuestras carpetas</h2>
+    <div class="body" style="gap:14px">
+      <div class="grid" style="grid-template-columns:1.15fr 1fr;align-items:center">
+        <div>
+          <p class="lead" style="margin:0 0 12px">Descarga: <code class="in">code.visualstudio.com/download</code></p>
+          <div class="term"><button class="copy">Copiar</button><span class="c"># En la terminal (PowerShell), uno por vez</span>
+<span class="k">C:</span>
+<span class="k">cd..</span>            <span class="c"># repetir hasta ver C:\</span>
+<span class="k">mkdir</span> AnalisisPython
+<span class="k">cd</span> AnalisisPython
+<span class="k">mkdir</span> Ingesta</div>
+        </div>
+        <div class="tree">📁 C:\AnalisisPython<br>&nbsp;├─ 📁 Ingesta <em>← los 4 Excel</em><br>&nbsp;│&nbsp;&nbsp;&nbsp;├─ Clientes.xlsx<br>&nbsp;│&nbsp;&nbsp;&nbsp;├─ Productos.xlsx<br>&nbsp;│&nbsp;&nbsp;&nbsp;├─ vendedores.xlsx<br>&nbsp;│&nbsp;&nbsp;&nbsp;└─ ventas.xlsx<br>&nbsp;└─ 📁 Scripts <em>← la creamos luego</em></div>
+      </div>
+      <div class="dl">
+        <div class="dl-ico">⬇</div>
+        <div><div class="dl-t">Descarga directa de los 4 Excel</div>
+          <a href="https://github.com/AlejandroASalinas/TallerPythonIA/raw/main/VerduleriaDonJuanito.zip" target="_blank" rel="noopener">github.com/AlejandroASalinas/TallerPythonIA<br>/raw/main/VerduleriaDonJuanito.zip</a></div>
+        <div class="dl-s">Pega el link en el navegador: se descarga solo. Descomprime y copia los 4 Excel a <b>Ingesta</b></div>
+      </div>
+      <div class="pc"><i>💻</i> Ahora al computador</div>
+    </div>
+  </section>
+
+  <!-- 7 PYTHON -->
+  <section class="slide" data-block="Módulo 1 · min 25–38"
+    data-note="<b>Al PC:</b> pega el comando en la terminal de VS Code. Explica que acepta los acuerdos automáticamente. winget crea la carpeta Descargas\Python.Python.3.12_3.12.10 con un .exe y un .yaml: solo sirve el .exe. Que lo copien a C:\AnalisisPython, lo abran y marquen «Add python.exe to PATH». <b>Requiere winget 1.6 o superior.</b> Si winget no funciona, reparte el instalador desde un pendrive; no intentes reparar winget en clase. <b>Después:</b> cerrar y reabrir VS Code antes de verificar.">
+    <span class="kick">Paso 2 de 3</span>
+    <h2>Descargar e instalar Python 3.12</h2>
+    <div class="body" style="gap:12px;margin-top:8px">
+      <div class="term sm"><button class="copy">Copiar</button><span class="c"># En la terminal: descarga el instalador (no instala nada todavía)</span>
+winget download --id Python.Python.3.12 --exact --version 3.12.10 --source winget --architecture x64 --accept-source-agreements --accept-package-agreements</div>
+      <div class="grid" style="grid-template-columns:1fr 1.05fr;gap:16px;align-items:stretch">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="card" style="padding:14px 20px"><h3 style="font-size:18px">Después de descargar</h3>
+            <p style="font-size:15.5px;line-height:1.6"><b>1.</b> En <b>Descargas\Python.Python.3.12_3.12.10</b> toma el <b>.exe</b> (no el .yaml).<br>
+            <b>2.</b> Cópialo y pégalo en <code class="in">C:\AnalisisPython</code>.<br>
+            <b>3.</b> Ábrelo y marca <b>Add python.exe to PATH</b>.<br>
+            <b>4.</b> Clic en <b>Install Now</b>.</p></div>
+          <div class="card navy" style="padding:14px 20px"><h3 style="font-size:18px">Verificar (cerrar y reabrir VS Code)</h3>
+            <div class="term" style="padding:9px 14px;font-size:14.5px"><button class="copy">Copiar</button><span class="k">py -3.12 --version</span>
+<span class="k">py -3.12 -m pip --version</span></div></div>
+        </div>
+        <div class="shot">
+          <img src="FotoInstalacionPython.png" alt="Instalador de Python 3.12"
+               onerror="if(!this.dataset.r){this.dataset.r=1;this.src='https://raw.githubusercontent.com/AlejandroASalinas/TallerPythonIA/main/FotoInstalacionPython.png';return;}this.outerHTML='<div class=&quot;shot-fb&quot;>Imagen del instalador<br><small>(requiere internet)</small></div>'">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 EXTENSIONES + LIBRERIAS -->
+  <section class="slide" data-block="Módulo 1 · min 38–50"
+    data-note="<b>Al PC:</b> instala las 3 extensiones desde la vista Extensiones. Luego ipykernel en la terminal. Crea un notebook temporal, elige el kernel Python 3.12 (arriba a la derecha) y corre la celda %pip. <b>Aclara:</b> %pip va en una celda, no en la terminal. <b>Si te atrasas:</b> salta Material Icon Theme.">
+    <span class="kick">Paso 3 de 3</span>
+    <h2>Extensiones y librerías</h2>
+    <div class="body" style="gap:14px">
+      <div class="grid g3">
+        <div class="card"><h3>Python</h3><p>Microsoft. Conecta VS Code con Python.</p></div>
+        <div class="card"><h3>Jupyter</h3><p>Microsoft. Permite trabajar por celdas.</p></div>
+        <div class="card"><h3>Material Icon Theme</h3><p>Solo íconos. No cambia ningún cálculo.</p></div>
+      </div>
+      <div class="grid g2">
+        <div class="term" style="font-size:15px"><button class="copy">Copiar</button><span class="c"># 1) En la terminal</span>
+<span class="k">py -3.12 -m pip install ipykernel</span></div>
+        <div class="term" style="font-size:15px"><button class="copy">Copiar</button><span class="c"># 2) En una celda del notebook</span>
+<span class="y">%pip install pandas numpy openpyxl xlsxwriter plotly jinja2</span></div>
+      </div>
+      <div class="pc"><i>💻</i> Ahora al computador</div>
+    </div>
+  </section>
+
+  <!-- 9 RECORRIDO -->
+  <section class="slide" data-block="Módulo 1 · min 50–55"
+    data-note="<b>Al PC:</b> crea la carpeta Scripts (cd.. y mkdir Scripts). Señala con el mouse cada zona en VS Code real. <b>Analogía:</b> VS Code es como un Bloc de notas con superpoderes; quien ejecuta el programa es Python, no el editor. <b>Máx. 6 min.</b>">
+    <span class="kick">Conociendo el espacio de trabajo</span>
+    <h2>VS Code en un minuto</h2>
+    <div class="body">
+      <div class="grid g4">
+        <div class="card"><div class="num">📁</div><h3>Explorador</h3><p>Las carpetas y archivos de tu proyecto.</p></div>
+        <div class="card"><div class="num">✎</div><h3>Editor</h3><p>Donde ves y editas cada archivo, en pestañas.</p></div>
+        <div class="card"><div class="num">&gt;_</div><h3>Terminal</h3><p>Comandos de Windows: crear carpetas, instalar.</p></div>
+        <div class="card navy"><div class="num">▶</div><h3>Kernel</h3><p>El Python que ejecuta tus celdas. Se elige arriba a la derecha.</p></div>
+      </div>
+      <div class="note"><b>Piénsalo así:</b> VS Code es un Bloc de notas con superpoderes. El editor solo escribe; quien ejecuta es <b>Python</b>.</div>
+    </div>
+  </section>
+
+  <!-- 10 IPYNB VS PY -->
+  <section class="slide" data-block="Módulo 1 · min 55–64"
+    data-note="<b>Al PC:</b> crea test.ipynb y test.py en Scripts. Demo: Celda 1 lee los Excel (lento). Celda 2 agrupa sin volver a leer (instantáneo). Luego Restart Kernel y muestra el NameError. <b>Mensaje:</b> la memoria del kernel NO es la memoria de la IA.">
+    <span class="kick">Dos tipos de archivo</span>
+    <h2>Notebook (.ipynb) y script (.py)</h2>
+    <div class="body">
+      <div class="grid g2">
+        <div class="card"><span class="tag n">test.ipynb</span><h3 style="margin-top:12px">Para construir y probar</h3>
+          <p>Trabaja por <b>celdas</b>. Ejecutas una parte, miras el resultado y sigues.</p></div>
+        <div class="card"><span class="tag g">test.py</span><h3 style="margin-top:12px">Para repetir el proceso</h3>
+          <p>Un texto que Python corre <b>completo</b>, de principio a fin, cada vez.</p></div>
+      </div>
+      <div class="note gold"><b>El kernel recuerda:</b> cargas los Excel una vez y sigues preguntando sin volver a leerlos.
+        Si lo <b>reinicias</b>, se borra todo y hay que cargar de nuevo.</div>
+      <div class="pc"><i>💻</i> Ahora al computador</div>
+    </div>
+  </section>
+
+  <!-- 11 CSV TSV -->
+  <section class="slide" data-block="Módulo 1 · min 64–69"
+    data-note="<b>Breve.</b> No hace falta crear archivos .tsv: el TSV es solo lo que se copia de la salida de la celda y se pega en el chat. <b>Máx. 5 min.</b>">
+    <span class="kick">Dos formatos de texto</span>
+    <h2>CSV y TSV: tablas sin Excel</h2>
+    <div class="body">
+      <div class="grid g2">
+        <div class="card"><h3>CSV</h3><p style="margin-bottom:12px">Columnas separadas por <b>coma</b> (a veces punto y coma).</p>
+          <div class="term" style="font-size:15px">fecha,Unidades,MontoVenta,IdCliente,IdProducto
+2025-09-16,1,590,96439,725828</div></div>
+        <div class="card navy"><h3>TSV</h3><p style="margin-bottom:12px">Columnas separadas por <b>tabulación</b>.</p>
+          <div class="term" style="font-size:15px">fecha       Unidades  MontoVenta  IdCliente  IdProducto
+2025-09-16  1         590         96439      725828</div></div>
+      </div>
+      <div class="note"><b>Hoy el TSV es nuestra evidencia:</b> lo copiamos de la salida de la celda y lo pegamos en el chat. La IA lo lee como una tabla.</div>
+    </div>
+  </section>
+
+  <!-- 12 CICLO IA -->
+  <section class="slide" data-block="Módulo 1 · min 69–73"
+    data-note="<b>Esta es la lámina más importante del módulo 1.</b> Déjala proyectada y explícala con calma.  Sigue directo a la lámina del prompt de trabajo.">
+    <span class="kick">La forma de trabajar</span>
+    <h2>El ciclo con la IA</h2>
+    <div class="body">
+      <div class="flow">
+        <div class="card"><div class="num">01</div><h3>Pides</h3><p>Un script que imprima un resumen en TSV.</p></div><div class="arrow">→</div>
+        <div class="card"><div class="num">02</div><h3>Ejecutas</h3><p>Pegas el código en una celda y presionas Play.</p></div><div class="arrow">→</div>
+        <div class="card"><div class="num">03</div><h3>Copias</h3><p>La salida TSV que aparece bajo la celda.</p></div><div class="arrow">→</div>
+        <div class="card green"><div class="num">04</div><h3>Devuelves</h3><p>La pegas en el chat. Ahora la IA sabe qué hay.</p></div>
+      </div>
+      <div class="note gold" style="text-align:center"><b>La IA no ve tu disco.</b> Conocer la ruta de un archivo no es lo mismo que haberlo leído: solo sabe lo que tú le muestras.</div>
+    </div>
+  </section>
+
+  <!-- 12b PROMPT DE TRABAJO -->
+  <section class="slide" data-block="Módulo 1 · min 73–80"
+    data-note="<b>La lámina clave antes del break.</b> No leas el prompt entero: resume sus 3 ideas (abajo). Que cada alumno lo pegue en el chat de su IA ahora. La IA responderá con un resumen de las reglas y esperará. Al volver del break, le pedimos el primer script. <b>Ojo:</b> si alguien copió los Excel a otra carpeta, debe cambiar las 4 rutas antes de enviar. <b>Cierra:</b> «A la vuelta, le pedimos el primer script con datos reales».">
+    <span class="kick">El contrato con la IA</span>
+    <h2>El prompt de trabajo</h2>
+    <div class="body" style="gap:12px;margin-top:10px">
+      <div class="term prompt"><button class="copy">Copiar</button>Quiero migrar un proceso de Excel a Python con tu ayuda. Antes de empezar, estas son las reglas de trabajo para toda la conversación:
+
+<b>ENTORNO</b>
+- Trabajo en Windows 11, con VS Code y Jupyter Notebook, en Python 3.12.
+- Yo ejecuto el código en mi computador. Tú no tienes acceso a mi disco ni a mis archivos: conocer una ruta no es lo mismo que haber leído el archivo. Solo sabes lo que yo te pegue.
+- Mis archivos están en estas rutas exactas. Úsalas tal cual, sin buscar en otras carpetas:
+  C:\AnalisisPython\Ingesta\Clientes.xlsx
+  C:\AnalisisPython\Ingesta\Productos.xlsx
+  C:\AnalisisPython\Ingesta\vendedores.xlsx
+  C:\AnalisisPython\Ingesta\ventas.xlsx
+
+<b>FORMA DE TRABAJAR</b>
+1. Avancemos un paso a la vez. Entrégame un solo script por respuesta y espera mi resultado antes de seguir.
+2. Cada script debe ser autocontenido: que lea lo que necesite y no dependa de otros archivos .py ni de variables que no haya creado.
+3. Cada script debe comenzar con comentarios que digan para qué sirve, qué hace y la fecha y hora de creación. Si no sabes la fecha y hora actual, pregúntamela; no la inventes.
+4. Mientras exploramos, los scripts deben imprimir SOLO TSV en la salida de la celda: con encabezados, sin índice, sin tablas Markdown y sin texto mezclado dentro del bloque. No deben crear, exportar ni modificar ningún archivo.
+5. Imprime resúmenes y muestras acotadas (por ejemplo, 5 a 10 filas), nunca miles de filas.
+6. Yo ejecutaré el script, copiaré la salida TSV o el error completo y te los pegaré. Interpreta solo esa evidencia.
+7. Nunca simules resultados ni supongas columnas, relaciones o reglas que no hayamos comprobado. Si algo no se puede determinar con lo que te mostré, dilo.
+8. Si te pego un error, explícame en una o dos frases qué pasó y entrégame el script corregido completo.
+9. Explícame en español simple, sin jerga innecesaria.
+
+<b>CUÁNDO DEJAR DE EXPLORAR</b>
+La exploración termina cuando entendamos: la estructura de cada archivo (columnas y filas), la clave de cada tabla, cómo se relacionan entre sí y los totales de venta y unidades. Cuando tengas esa evidencia, dímelo y deja de pedir diagnósticos. No busques perfeccionar los datos.
+
+<b>DESPUÉS</b>
+Luego te haré preguntas de negocio sobre los datos, siguiendo las mismas reglas. Solo cuando yo te lo pida construiremos un script que genere un dashboard HTML autocontenido y lo abra en el navegador; en esa etapa sí estará autorizado escribir archivos. No lo generes antes.
+
+Si entendiste, respóndeme con un resumen de estas reglas en 3 líneas y espera mi primera instrucción.</div>
+      <div class="grid g3">
+        <div class="note" style="text-align:center;padding:10px"><b>Un paso a la vez</b></div>
+        <div class="note" style="text-align:center;padding:10px"><b>Solo TSV, sin exportar</b></div>
+        <div class="note" style="text-align:center;padding:10px"><b>Nunca inventar resultados</b></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 13 BREAK -->
+  <section class="slide center" data-block="Break · 20 min"
+    data-note="<b>Clic en «Iniciar 20:00»</b> y déjala proyectada. Usa el break para ayudar a quien quedó con la instalación a medias. <b>Reinicia el reloj</b> (tecla R) al partir el módulo 2.">
+    <span class="kick">Pausa</span>
+    <h1 style="margin-top:8px">Break de 20 minutos</h1>
+    <div id="cd" class="mono" style="font-size:110px;font-weight:600;color:var(--navy);margin:18px 0 10px">20:00</div>
+    <button class="btn pri" id="cdbtn" style="font-size:15px;padding:11px 26px">Iniciar 20:00</button>
+    <p class="lead" style="margin-top:20px">Deja VS Code abierto. Si algo no se instaló, este es el momento de avisar.</p>
+  </section>
+
+  <!-- 14 SECCIÓN M2 -->
+  <section class="slide center sec" data-block="Módulo 2 · min 0"
+    data-note="<b>Reinicia el reloj (R) e inícialo.</b> Transición: «Ya tenemos el taller armado. Ahora migramos un proceso de verdad».">
+    <div class="big">2</div>
+    <h1 style="margin-top:10px">Migrar con la IA</h1>
+    <p class="lead">De cuatro Excel a un dashboard, sin escribir código a mano.</p>
+  </section>
+
+  <!-- 15 ARCHIVOS -->
+  <section class="slide" data-block="Módulo 2 · min 0–5"
+    data-note="<b>No expliques las columnas:</b> que las descubra la IA. Solo muestra que los 4 archivos están en Ingesta. Presenta el caso: Verdulería Don Juanito, una distribuidora ficticia de frutas, verduras y abarrotes que vende a negocios en todo Chile. Recalca que son datos ficticios y que no se pegan datos confidenciales reales en una IA sin autorización.">
+    <span class="kick">Nuestro caso</span>
+    <h2>Verdulería Don Juanito: cuatro Excel</h2>
+    <div class="body">
+      <div class="grid g4">
+        <div class="card navy"><div class="num">▦</div><h3>ventas.xlsx</h3><p>Lo que se vendió.</p></div>
+        <div class="card"><div class="num">☺</div><h3>Clientes.xlsx</h3><p>A quién se le vendió.</p></div>
+        <div class="card"><div class="num">◈</div><h3>Productos.xlsx</h3><p>Qué se vendió.</p></div>
+        <div class="card"><div class="num">★</div><h3>vendedores.xlsx</h3><p>Quién hizo cada venta.</p></div>
+      </div>
+      <div class="grid g2">
+        <div class="note"><b>¿Qué hay adentro y cómo se conectan?</b> No lo diremos nosotros: lo descubrirá la IA con nuestra ayuda.</div>
+        <div class="note gold"><b>Datos ficticios.</b> Con datos reales de tu empresa, respeta siempre su política de confidencialidad.</div>
+      </div>
+      <div class="dl" style="padding:12px 20px">
+        <div class="dl-ico">⬇</div>
+        <div><div class="dl-t">¿No tienes los archivos?</div>
+          <a href="https://github.com/AlejandroASalinas/TallerPythonIA/raw/main/VerduleriaDonJuanito.zip" target="_blank" rel="noopener">github.com/AlejandroASalinas/TallerPythonIA<br>/raw/main/VerduleriaDonJuanito.zip</a></div>
+        <div class="dl-s">Se descarga solo. Descomprime y copia los 4 Excel a <b>C:\AnalisisPython\Ingesta</b></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 16 ARRANQUE -->
+  <section class="slide" data-block="Módulo 2 · min 5–10"
+    data-note="<b>Al PC:</b> vuelve al chat donde pegaron el prompt de trabajo antes del break (si alguien lo cerró, que lo pegue de nuevo). Copia este prompt, pégalo en el chat y envíalo. Pega el script que entregue la IA en una celda, presiona Play y devuelve la salida. <b>Ojo:</b> si alguien tiene los Excel en otra carpeta, debe cambiar las 4 rutas antes de enviar.">
+    <span class="kick">Retomamos</span>
+    <h2>El primer script</h2>
+    <div class="body" style="gap:14px">
+      <div class="term" style="font-size:16px;line-height:1.6;padding-right:90px"><button class="copy">Copiar</button>Mándame un script exploratorio que revise las rutas de los archivos del proyecto
+<span class="o">"C:\AnalisisPython\Ingesta\Clientes.xlsx"
+"C:\AnalisisPython\Ingesta\Productos.xlsx"
+"C:\AnalisisPython\Ingesta\vendedores.xlsx"
+"C:\AnalisisPython\Ingesta\ventas.xlsx"</span></div>
+      <div class="flow">
+        <div class="card" style="padding:16px 18px"><div class="num">01</div><h3>Pide</h3><p>Pega este prompt en el mismo chat del prompt de trabajo.</p></div><div class="arrow">→</div>
+        <div class="card" style="padding:16px 18px"><div class="num">02</div><h3>Ejecuta</h3><p>Pega el script en una celda y presiona Play.</p></div><div class="arrow">→</div>
+        <div class="card" style="padding:16px 18px"><div class="num">03</div><h3>Copia</h3><p>La salida TSV completa, con encabezados.</p></div><div class="arrow">→</div>
+        <div class="card green" style="padding:16px 18px"><div class="num">04</div><h3>Devuelve</h3><p>Pégala en el chat y espera el siguiente paso.</p></div>
+      </div>
+      <div class="pc"><i>💻</i> Ahora al computador</div>
+    </div>
+  </section>
+
+  <!-- 17 EXPLORAR -->
+  <section class="slide" data-block="Módulo 2 · min 10–35"
+    data-note="<b>Al PC, el bloque más largo (25 min).</b> Repite el ciclo 2–4 veces. Cuando aparezca un error, celébralo: se copia y se pega en el chat. <b>Cuándo cortar:</b> cuando los 4 puntos estén marcados. No persigas cada anomalía de los datos: son ficticios. <b>Si te atrasas:</b> corta a los 35 min pase lo que pase.">
+    <span class="kick">Explorar con un límite</span>
+    <h2>¿Cuándo ya entendimos el modelo?</h2>
+    <div class="body">
+      <div class="grid g4">
+        <div class="card"><div class="num">01</div><h3>Estructura</h3><p>Qué columnas y cuántas filas tiene cada archivo.</p></div>
+        <div class="card"><div class="num">02</div><h3>Claves</h3><p>Qué columna identifica a cada cliente, producto y vendedor.</p></div>
+        <div class="card"><div class="num">03</div><h3>Relaciones</h3><p>Con qué columna se conecta cada tabla con las otras.</p></div>
+        <div class="card"><div class="num">04</div><h3>Totales</h3><p>Venta y unidades totales, para comparar después.</p></div>
+      </div>
+      <div class="note gold"><b>¿Apareció un error?</b> Perfecto: se copia completo y se pega en el chat. Eso también es parte del ciclo.</div>
+      <div class="pc"><i>💻</i> Ahora al computador</div>
+    </div>
+  </section>
+
+  <!-- 18 PREGUNTAS -->
+  <section class="slide" data-block="Módulo 2 · min 35–45"
+    data-note="<b>Al PC:</b> haz 2 preguntas tú y pide 1 al curso. Sigue siendo ciclo TSV. <b>Referencia para ti:</b> venta total $3.379.247.684; 869.821 unidades; categoría mayor Lácteos y Huevos (las 6 categorías están parejas); solo hay sept-2025 y sept-2026 (no es una serie mensual). <b>Cuidado:</b> no hay ID de boleta, así que no existe «ticket promedio».">
+    <span class="kick">Ahora, el negocio</span>
+    <h2>Hazle preguntas a tus datos</h2>
+    <div class="body">
+      <div class="grid g2">
+        <div class="card"><h3>«¿Quiénes son los vendedores y cuánto vendió cada uno?»</h3></div>
+        <div class="card"><h3>«¿Cuáles son los 10 productos que más venden?»</h3></div>
+        <div class="card"><h3>«¿Cómo se reparte la venta por categoría?»</h3></div>
+        <div class="card"><h3>«¿Cómo fue septiembre 2026 frente a septiembre 2025?»</h3></div>
+      </div>
+      <div class="note"><b>Tu aporte es la pregunta.</b> La IA escribe el script; tú decides si la respuesta tiene sentido para el negocio.</div>
+      <div class="pc"><i>💻</i> Ahora al computador</div>
+    </div>
+  </section>
+
+  <!-- 19 DASHBOARD -->
+  <section class="slide" data-block="Módulo 2 · min 45–65"
+    data-note="<b>Al PC (20 min):</b> ahora sí se autoriza exportar. Copia el prompt y pégalo en el mismo chat de la exploración, así la IA ya conoce los campos y relaciones. Ejecuta y deja que el navegador se abra solo: es el momento «wow». Recorre las pestañas y el panel de alertas. <b>Si aparece un error:</b> se copia completo y se pega en el chat, como siempre. <b>Si te atrasas:</b> ten un script ya probado listo para pegar. <b>Aclara:</b> el HTML lleva los datos adentro; quien lo reciba puede verlos.">
+    <span class="kick">El entregable</span>
+    <h2>Un dashboard HTML que se abre solo</h2>
+    <div class="body" style="gap:14px">
+      <div class="term" style="font-size:16.5px;line-height:1.6;padding-right:90px"><button class="copy">Copiar</button>Mándame un script que genere un dashboard HTML con estos datos. Incluye tabs, gráficos y un panel de alertas. El navegador debe abrirse automáticamente.</div>
+      <div class="grid g3" style="gap:14px">
+        <div class="card" style="padding:16px 20px"><h3>Pestañas (tabs)</h3><p>Una vista general y vistas por equipo o categoría.</p></div>
+        <div class="card" style="padding:16px 20px"><h3>Gráficos</h3><p>Interactivos: pasas el mouse y ves el detalle.</p></div>
+        <div class="card" style="padding:16px 20px"><h3>Panel de alertas</h3><p>Lo que conviene revisar en los datos, a la vista.</p></div>
+        <div class="card" style="padding:16px 20px"><h3>Se abre solo</h3><p>El script lo genera y abre el navegador automáticamente.</p></div>
+        <div class="card" style="padding:16px 20px"><h3>Un solo archivo</h3><p>Datos, gráficos y diseño dentro del mismo HTML.</p></div>
+        <div class="card" style="padding:16px 20px"><h3>Sin servidor ni licencias</h3><p>Se comparte como cualquier archivo.</p></div>
+      </div>
+      <div class="pc"><i>💻</i> Ahora al computador</div>
+    </div>
+  </section>
+
+  <!-- 20 CHECKLIST -->
+  <section class="slide" data-block="Módulo 2 · min 65–70"
+    data-note="<b>Muestra en el dashboard</b> que el total coincide con el de la exploración. Cifras de control: 109.857 filas antes y después de unir; venta total $3.379.247.684. <b>Mensaje:</b> los controles protegen la migración, no son el objetivo.">
+    <span class="kick">Antes de confiar</span>
+    <h2>Cuatro comprobaciones</h2>
+    <div class="body">
+      <div class="grid g2">
+        <div class="card"><div class="num">01</div><h3>¿Leí el archivo correcto?</h3><p>La ruta está escrita en el script y aparece en el reporte.</p></div>
+        <div class="card"><div class="num">02</div><h3>¿Se mantienen las filas?</h3><p>Al cruzar tablas, las ventas no deben multiplicarse.</p></div>
+        <div class="card"><div class="num">03</div><h3>¿Se conserva el total?</h3><p>La venta total antes y después de unir debe ser la misma.</p></div>
+        <div class="card"><div class="num">04</div><h3>¿Cambiaron los datos?</h3><p>El HTML no se actualiza solo: se vuelve a ejecutar el script.</p></div>
+      </div>
+      <div class="grid g2">
+        <div class="card" style="padding:14px 24px"><div class="stat">109.857</div><p>filas de venta, antes y después de cruzar</p></div>
+        <div class="card" style="padding:14px 24px"><div class="stat">$3.379.247.684</div><p>venta total que debe conservarse</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 21 MODELO -->
+  <section class="slide" data-block="Módulo 2 · min 70–76"
+    data-note="<b>Teoría como cierre:</b> «esto es lo que ya hicieron». Ventas al centro = hechos; alrededor = dimensiones. <b>Pregunta al curso:</b> «¿qué otro campo agregarían?» y «¿qué dimensión falta?» (ideas: Calendario, Sucursal, Canal). Haz clic en las líneas punteadas y escribe lo que digan; Enter para terminar. <b>Regla de oro:</b> la clave 🔑 de cada dimensión es única; si se repite, las ventas se multiplican al cruzar. <b>Estrella pura:</b> las tres dimensiones se conectan directo a ventas, cada una por su Id.">
+    <span class="kick">Lo que construimos sin darnos cuenta</span>
+    <h2>El modelo estrella</h2>
+    <div class="body" style="gap:12px;justify-content:flex-start">
+      <div class="star">
+        <svg viewBox="0 0 1136 384" preserveAspectRatio="none">
+          <line class="wire" x1="270" y1="90" x2="428" y2="150"/>
+          <line class="wire" x1="270" y1="294" x2="428" y2="240"/>
+          <line class="wire" x1="866" y1="90" x2="708" y2="150"/>
+          <line class="wire new" x1="866" y1="294" x2="708" y2="240"/>
+        </svg>
+
+        <div class="ent" style="left:0;top:0"><small>Dimensión</small><h4>Clientes <span>1.782 filas</span></h4>
+          <p>🔑 IdCliente<br>Region<br>RazonSocial<br><span class="add" contenteditable="true" data-ph="+ ¿otro campo?"></span></p></div>
+
+        <div class="ent" style="left:0;bottom:0"><small>Dimensión</small><h4>vendedores <span>29 filas</span></h4>
+          <p>🔑 IdVendedor<br>NombreVendedor<br>NombreJefe<br><span class="add" contenteditable="true" data-ph="+ ¿otro campo?"></span></p></div>
+
+        <div class="ent fact" style="left:428px;top:50%;transform:translateY(-50%);width:280px"><small>Tabla de hechos</small><h4>ventas <span>109.857 filas</span></h4>
+          <p>fecha<br>Unidades<br>MontoVenta<br>🔗 IdCliente<br>🔗 IdProducto<br>🔗 IdVendedor<br><span class="add" contenteditable="true" data-ph="+ ¿otro campo?"></span></p></div>
+
+        <div class="ent" style="right:0;top:0"><small>Dimensión</small><h4>Productos <span>175 filas</span></h4>
+          <p>🔑 IdProducto<br>Categoria<br>Marca<br>Descriptor<br><span class="add" contenteditable="true" data-ph="+ ¿otro campo?"></span></p></div>
+
+        <div class="ent empty" style="right:0;bottom:0"><small>Dimensión nueva</small>
+          <h4><span class="add ttl" contenteditable="true" data-ph="¿Cuál falta?"></span></h4>
+          <p><span class="add" contenteditable="true" data-ph="🔑 ¿su clave?"></span><br><span class="add" contenteditable="true" data-ph="+ ¿qué campo?"></span><br><span class="add" contenteditable="true" data-ph="+ ¿qué campo?"></span><br><span class="add" contenteditable="true" data-ph="+ ¿qué campo?"></span></p></div>
+
+        <div class="rel" style="left:349px;top:120px">IdCliente<b>1 → ∞</b></div>
+        <div class="rel" style="left:349px;top:267px">IdVendedor<b>1 → ∞</b></div>
+        <div class="rel" style="left:787px;top:120px">IdProducto<b>∞ ← 1</b></div>
+        <div class="rel" style="left:787px;top:267px">¿clave?<b>∞ ← 1</b></div>
+      </div>
+      <div class="note" style="padding:10px 18px;font-size:15.5px"><b>1 → ∞</b> una fila de la dimensión se conecta con muchas filas de la otra tabla. &nbsp;·&nbsp; <b>🔑</b> clave única &nbsp;·&nbsp; <b>🔗</b> columna que conecta &nbsp;·&nbsp; Haz clic en lo punteado para escribir.</div>
+    </div>
+  </section>
+
+  <!-- 22 CIERRE -->
+  <section class="slide center" data-block="Módulo 2 · min 76–80"
+    data-note="<b>Cierra con las 3 ideas y abre preguntas.</b> Revisa aquí las preguntas que anotaste «para el final». Agradece y despide a la hora.">
+    <span class="kick">Para llevarte</span>
+    <h2 style="font-size:42px">Tres ideas que valen más que el código</h2>
+    <div class="grid g3" style="margin-top:28px;width:100%">
+      <div class="card"><div class="num">01</div><h3>Tú diriges, la IA escribe</h3><p>Describe tu proceso en español y avanza un paso a la vez.</p></div>
+      <div class="card"><div class="num">02</div><h3>Muéstrale evidencia</h3><p>La IA solo sabe lo que le pegas: resultados en TSV y errores completos.</p></div>
+      <div class="card"><div class="num">03</div><h3>Comprueba los totales</h3><p>Un proceso migrado es confiable cuando sus números cuadran.</p></div>
+    </div>
+    <h1 style="font-size:40px;margin-top:34px"><span class="grad">¿Preguntas?</span></h1>
+  </section>
+
+  <div id="notes"></div>
+
+  <footer>
+    <div><kbd>←</kbd> <kbd>→</kbd> avanzar &nbsp;·&nbsp; <kbd>N</kbd> guía del relator &nbsp;·&nbsp; <kbd>F</kbd> pantalla completa &nbsp;·&nbsp; <kbd>R</kbd> reiniciar reloj</div>
+    <div class="nav">
+      <button class="btn" id="prev">‹ Anterior</button>
+      <button class="btn pri" id="next">Siguiente ›</button>
+    </div>
+  </footer>
+</div>
+
+<script>
+  const stage = document.getElementById('stage');
+  const slides = [...document.querySelectorAll('.slide')];
+  const notes = document.getElementById('notes');
+  let cur = 0;
+
+  function fit(){
+    const s = Math.min(innerWidth/1280, innerHeight/720);
+    stage.style.transform = 'translate(-50%,-50%) scale(' + s + ')';
+  }
+  addEventListener('resize', fit); fit();
+
+  function show(i){
+    cur = Math.max(0, Math.min(slides.length-1, i));
+    slides.forEach((s,k)=>s.classList.toggle('on', k===cur));
+    document.getElementById('cur').textContent = cur+1;
+    document.getElementById('tot').textContent = slides.length;
+    document.getElementById('prog').style.width = ((cur+1)/slides.length*100)+'%';
+    document.getElementById('block').textContent = slides[cur].dataset.block || '';
+    notes.innerHTML = '<b>Guía del relator · </b>' + (slides[cur].dataset.note || '');
+  }
+  document.getElementById('prev').onclick = ()=>show(cur-1);
+  document.getElementById('next').onclick = ()=>show(cur+1);
+
+  // Reloj del módulo
+  const clock = document.getElementById('clock');
+  let secs = 0, run = null;
+  const mmss = t => String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0');
+  function paint(){ clock.innerHTML = '<span>'+(run?'❚❚':'▶')+'</span> '+mmss(secs); clock.style.background = secs>=80*60 ? '#b91c1c' : ''; }
+  clock.onclick = ()=>{ if(run){clearInterval(run);run=null;} else {run=setInterval(()=>{secs++;paint();},1000);} paint(); };
+  function resetClock(){ if(run){clearInterval(run);run=null;} secs=0; paint(); }
+
+  // Cuenta regresiva del break
+  const cd = document.getElementById('cd'), cdbtn = document.getElementById('cdbtn');
+  let left = 20*60, cdrun = null;
+  cdbtn.onclick = ()=>{
+    if(cdrun){ clearInterval(cdrun); cdrun=null; left=20*60; cd.textContent=mmss(left); cdbtn.textContent='Iniciar 20:00'; return; }
+    cdbtn.textContent='Reiniciar';
+    cdrun = setInterval(()=>{ left=Math.max(0,left-1); cd.textContent=mmss(left); if(!left){clearInterval(cdrun);cdrun=null;cd.style.color='#b91c1c';} },1000);
+  };
+
+  // Copiar comandos
+  document.querySelectorAll('.copy').forEach(b=>{
+    b.onclick = ()=>{
+      const box = b.parentElement.cloneNode(true);
+      box.querySelector('.copy').remove();
+      box.querySelectorAll('.c').forEach(c=>c.remove());
+      const txt = box.textContent.split('\n').map(l=>l.trimEnd()).filter(l=>l.trim()).join('\n');
+      const done = ()=>{ b.textContent='¡Copiado!'; setTimeout(()=>b.textContent='Copiar',1400); };
+      if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(done, fallback); } else fallback();
+      function fallback(){ const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select();
+        try{document.execCommand('copy');done();}catch(e){} ta.remove(); }
+    };
+  });
+
+  addEventListener('keydown', e=>{
+    const k = e.key;
+    if(e.target.isContentEditable){ if(k==='Enter'||k==='Escape'){ e.preventDefault(); e.target.blur(); } return; }
+    if(k==='ArrowRight'||k==='PageDown'||k===' '){ e.preventDefault(); show(cur+1); }
+    else if(k==='ArrowLeft'||k==='PageUp'){ e.preventDefault(); show(cur-1); }
+    else if(k==='Home') show(0);
+    else if(k==='End') show(slides.length-1);
+    else if(k==='n'||k==='N') notes.classList.toggle('on');
+    else if(k==='r'||k==='R') resetClock();
+    else if(k==='f'||k==='F'){ if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{}); else document.exitFullscreen(); }
+  });
+
+  paint(); show(0);
+</script>
+</body>
+</html>
